@@ -4,6 +4,8 @@ import com.chatapp.dto.*;
 import com.chatapp.model.ChatRoom;
 import com.chatapp.model.Message;
 import com.chatapp.service.ChatService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RequestMapping("/api/chatapp/chatrooms")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Chat Rooms", description = "Endpoints for chat room management, participants, and messaging in Redis")
 public class ChatController {
 
     private final ChatService chatService;
@@ -32,6 +35,7 @@ public class ChatController {
      * Create a new chat room.
      * POST /api/chatapp/chatrooms
      */
+    @Operation(summary = "Create a new chat room", description = "Creates a unique chat room stored in a Redis Hash")
     @PostMapping
     public ResponseEntity<ApiResponse<Map<String, String>>> createChatRoom(
             @Valid @RequestBody CreateRoomRequest request) {
@@ -60,6 +64,7 @@ public class ChatController {
      * Join a chat room.
      * POST /api/chatapp/chatrooms/{roomId}/join
      */
+    @Operation(summary = "Join a chat room", description = "Adds a user to the room's participant Set in Redis")
     @PostMapping("/{roomId}/join")
     public ResponseEntity<ApiResponse<Void>> joinChatRoom(
             @PathVariable String roomId,
@@ -89,6 +94,7 @@ public class ChatController {
      * Send a message to a chat room.
      * POST /api/chatapp/chatrooms/{roomId}/messages
      */
+    @Operation(summary = "Send a message", description = "Stores message in Redis List and broadcasts via Redis Pub/Sub & WebSockets")
     @PostMapping("/{roomId}/messages")
     public ResponseEntity<ApiResponse<Void>> sendMessage(
             @PathVariable String roomId,
@@ -117,6 +123,7 @@ public class ChatController {
      * Retrieve chat history from a room.
      * GET /api/chatapp/chatrooms/{roomId}/messages?limit=N
      */
+    @Operation(summary = "Retrieve chat history", description = "Fetches the last N messages from the room's Redis List")
     @GetMapping("/{roomId}/messages")
     public ResponseEntity<ApiResponse<Map<String, List<Message>>>> getMessages(
             @PathVariable String roomId,
@@ -143,6 +150,7 @@ public class ChatController {
      * Get chat room information.
      * GET /api/chatapp/chatrooms/{roomId}
      */
+    @Operation(summary = "Get chat room details", description = "Retrieves room metadata and participant count from Redis Hash")
     @GetMapping("/{roomId}")
     public ResponseEntity<ApiResponse<ChatRoom>> getChatRoom(@PathVariable String roomId) {
         log.info("Retrieving chat room: {}", roomId);
@@ -162,6 +170,7 @@ public class ChatController {
      * Delete a chat room (optional feature).
      * DELETE /api/chatapp/chatrooms/{roomId}
      */
+    @Operation(summary = "Delete a chat room", description = "Deletes room metadata Hash, participants Set, and messages List from Redis")
     @DeleteMapping("/{roomId}")
     public ResponseEntity<ApiResponse<Void>> deleteChatRoom(@PathVariable String roomId) {
         log.info("Deleting room {}", roomId);
